@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IQ — Analyse Stripe 2023-2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF5F0;
+  --bg-card: #FFFFFF;
+  --bg-warm: #FFF5EC;
+  --bg-accent: #FFF0E3;
+  --text: #2D2A26;
+  --text-muted: #8A8279;
+  --text-light: #B5ADA4;
+  --peach: #F4845F;
+  --peach-light: #FCEADE;
+  --coral: #E85D4A;
+  --sage: #7B9E87;
+  --sage-light: #E8F0EA;
+  --gold: #D4A853;
+  --gold-light: #FBF3E0;
+  --blue-muted: #7B8FA8;
+  --border: #E8E2DA;
+  --shadow: 0 1px 3px rgba(45,42,38,0.06), 0 4px 12px rgba(45,42,38,0.04);
+  --shadow-lg: 0 4px 16px rgba(45,42,38,0.08), 0 12px 40px rgba(45,42,38,0.06);
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+header .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--peach);
+  background: var(--peach-light);
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+header .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* KPI Row */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.kpi .label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.kpi .value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.kpi .delta {
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+.kpi .delta.negative { color: var(--coral); }
+.kpi .delta.positive { color: var(--sage); }
+.kpi .delta.neutral { color: var(--text-muted); }
+
+/* Sections */
+.section {
+  margin-bottom: 40px;
+}
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.section-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* Chart bars */
+.bar-chart { width: 100%; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 90px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.bar-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: right;
+}
+.bar-track {
+  height: 28px;
+  background: var(--bg-warm);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+}
+.bar-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+/* Year comparison chart */
+.year-compare { margin-top: 8px; }
+.year-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 80px 60px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.year-row .yr { font-size: 13px; font-weight: 600; text-align: right; }
+.year-row .bar-track { height: 24px; }
+.year-row .val { font-size: 13px; font-weight: 600; text-align: right; }
+.year-row .chg { font-size: 12px; font-weight: 500; text-align: right; }
+
+/* Monthly heatmap */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(12, 1fr);
+  gap: 3px;
+  font-size: 11px;
+}
+.hm-header {
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 4px 0;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+.hm-year {
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  padding: 8px 8px 8px 0;
+  font-size: 13px;
+}
+.hm-cell {
+  border-radius: 4px;
+  padding: 8px 4px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text);
+  position: relative;
+}
+.hm-cell.empty { background: #f5f0eb; color: var(--text-light); }
+
+/* Projection section */
+.projection-box {
+  background: var(--bg-accent);
+  border: 2px dashed var(--peach);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-top: 12px;
+}
+.projection-box .proj-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--peach);
+  margin-bottom: 12px;
+}
+.proj-scenarios {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.scenario {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.scenario .sc-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.scenario .sc-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+.scenario .sc-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.scenario.pessimistic .sc-value { color: var(--coral); }
+.scenario.moderate .sc-value { color: var(--gold); }
+.scenario.optimistic .sc-value { color: var(--sage); }
+
+/* Category breakdown */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.cat-card {
+  background: var(--bg-warm);
+  border-radius: 10px;
+  padding: 16px;
+}
+.cat-card .cat-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.cat-mini-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.cat-mini-row:last-child { border: none; }
+.cat-mini-row .cmr-year { color: var(--text-muted); font-weight: 500; }
+.cat-mini-row .cmr-val { font-weight: 600; }
+.cat-mini-row .cmr-chg { font-weight: 500; font-size: 12px; }
+
+/* Insight blocks */
+.insight {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.insight.warning { background: #FFF3EC; border-left: 3px solid var(--coral); }
+.insight.info { background: var(--sage-light); border-left: 3px solid var(--sage); }
+.insight.alert { background: var(--gold-light); border-left: 3px solid var(--gold); }
+.insight .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.insight .text { font-size: 14px; line-height: 1.5; }
+.insight .text strong { font-weight: 600; }
+
+/* Quarterly table */
+.q-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.q-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border);
+}
+.q-table th.num { text-align: right; }
+.q-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.q-table td.num { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table .total-row td { font-weight: 700; border-top: 2px solid var(--text); border-bottom: none; }
+.q-table .proj-row td { color: var(--text-muted); font-style: italic; }
+
+/* Footer */
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .cat-grid { grid-template-columns: 1fr; }
+  .proj-scenarios { grid-template-columns: 1fr; }
+  header h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="tag">Analyse financière</div>
+  <h1>Revenus Stripe — Illustration Québec</h1>
+  <div class="subtitle">Analyse détaillée 2023–2026 avec projections &middot; Données au 6 mars 2026</div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="label">Net 2025</div>
+    <div class="value">57 292 $</div>
+    <div class="delta negative">▼ 13,0 % vs 2024</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Jan-Fév 2026</div>
+    <div class="value">8 690 $</div>
+    <div class="delta negative">▼ 41,5 % vs Jan-Fév 2025</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Transactions 2025</div>
+    <div class="value">263</div>
+    <div class="delta negative">▼ 11,7 % vs 2024</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Tx moy. 2026</div>
+    <div class="value">244 $</div>
+    <div class="delta positive">▲ 7,5 % vs 2025</div>
+  </div>
+</div>
+
+<!-- ALERTE -->
+<div class="section">
+  <div class="insight warning">
+    <div class="icon">⚠️</div>
+    <div class="text">
+      <strong>Signal critique :</strong> Les revenus de janvier-février 2026 (8 690 $ net) sont en baisse de 41,5 % par rapport à la même période en 2025 (14 849 $). C'est le pire départ d'année depuis le lancement du système Stripe. La tendance de déclin qui s'accélère (−6,8 % en 2024, −13,0 % en 2025) semble encore s'aggraver.
+    </div>
+  </div>
+  <div class="insight info">
+    <div class="icon">📊</div>
+    <div class="text">
+      <strong>Point positif :</strong> Le montant moyen par transaction remonte à 244 $ en 2026, contre 227 $ en 2025. Plus de membres choisissent les formules avec Portfolio+, ce qui compense partiellement la baisse du nombre d'adhésions.
+    </div>
+  </div>
+</div>
+
+<!-- Revenus annuels -->
+<div class="section">
+  <div class="section-title">Évolution des revenus nets</div>
+  <div class="section-desc">Revenus après frais Stripe et remboursements, en dollars canadiens</div>
+  <div class="card">
+    <div class="year-compare">
+      <div class="year-row">
+        <div class="yr">2023</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--sage);"></div></div>
+        <div class="val">70 597 $</div>
+        <div class="chg" style="color:var(--sage);">réf.</div>
+      </div>
+      <div class="year-row">
+        <div class="yr">2024</div>
+        <div class="bar-track"><div class="bar-fill" style="width:93.2%;background:var(--gold);"></div></div>
+        <div class="val">65 826 $</div>
+        <div class="chg" style="color:var(--coral);">−6,8 %</div>
+      </div>
+      <div class="year-row">
+        <div class="yr">2025</div>
+        <div class="bar-track"><div class="bar-fill" style="width:81.1%;background:var(--peach);"></div></div>
+        <div class="val">57 292 $</div>
+        <div class="chg" style="color:var(--coral);">−13,0 %</div>
+      </div>
+      <div class="year-row" style="opacity:0.7;">
+        <div class="yr" style="font-style:italic;">2026</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16.7%;background:var(--coral);border:2px dashed var(--coral);background:repeating-linear-gradient(45deg,var(--peach-light),var(--peach-light) 4px,#fde0d0 4px,#fde0d0 8px);"></div></div>
+        <div class="val" style="color:var(--text-muted);font-style:italic;">11 768 $</div>
+        <div class="chg" style="color:var(--text-muted);">au 6 mars</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Heatmap mensuel -->
+<div class="section">
+  <div class="section-title">Carte thermique mensuelle</div>
+  <div class="section-desc">Revenus nets par mois — intensité de couleur proportionnelle au montant</div>
+  <div class="card" style="overflow-x:auto;">
+    <div class="heatmap-grid" id="heatmap"></div>
+  </div>
+</div>
+
+<!-- Détail trimestriel -->
+<div class="section">
+  <div class="section-title">Détail trimestriel</div>
+  <div class="section-desc">Comparaison trimestre par trimestre avec variation annuelle</div>
+  <div class="card">
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th>Trimestre</th>
+          <th class="num">Transactions</th>
+          <th class="num">Revenu net</th>
+          <th class="num">Var. vs année préc.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2023 Q1</td><td class="num">100</td><td class="num">21 732 $</td><td class="num" style="color:var(--text-muted)">—</td></tr>
+        <tr><td>2023 Q2</td><td class="num">66</td><td class="num">15 047 $</td><td class="num" style="color:var(--text-muted)">—</td></tr>
+        <tr><td>2023 Q3</td><td class="num">67</td><td class="num">15 510 $</td><td class="num" style="color:var(--text-muted)">—</td></tr>
+        <tr><td>2023 Q4</td><td class="num">85</td><td class="num">18 308 $</td><td class="num" style="color:var(--text-muted)">—</td></tr>
+        <tr class="total-row"><td>2023</td><td class="num">318</td><td class="num">70 597 $</td><td class="num"></td></tr>
+
+        <tr><td>2024 Q1</td><td class="num">96</td><td class="num">22 200 $</td><td class="num" style="color:var(--sage)">+2,2 %</td></tr>
+        <tr><td>2024 Q2</td><td class="num">64</td><td class="num">13 758 $</td><td class="num" style="color:var(--coral)">−8,6 %</td></tr>
+        <tr><td>2024 Q3</td><td class="num">64</td><td class="num">13 982 $</td><td class="num" style="color:var(--coral)">−9,9 %</td></tr>
+        <tr><td>2024 Q4</td><td class="num">74</td><td class="num">15 887 $</td><td class="num" style="color:var(--coral)">−13,2 %</td></tr>
+        <tr class="total-row"><td>2024</td><td class="num">298</td><td class="num">65 826 $</td><td class="num" style="color:var(--coral)">−6,8 %</td></tr>
+
+        <tr><td>2025 Q1</td><td class="num">87</td><td class="num">20 463 $</td><td class="num" style="color:var(--coral)">−7,8 %</td></tr>
+        <tr><td>2025 Q2</td><td class="num">68</td><td class="num">14 080 $</td><td class="num" style="color:var(--sage)">+2,3 %</td></tr>
+        <tr><td>2025 Q3</td><td class="num">36</td><td class="num">7 154 $</td><td class="num" style="color:var(--coral)">−48,8 %</td></tr>
+        <tr><td>2025 Q4</td><td class="num">72</td><td class="num">15 595 $</td><td class="num" style="color:var(--coral)">−1,8 %</td></tr>
+        <tr class="total-row"><td>2025</td><td class="num">263</td><td class="num">57 292 $</td><td class="num" style="color:var(--coral)">−13,0 %</td></tr>
+
+        <tr class="proj-row"><td>2026 Q1 (partiel)</td><td class="num">51</td><td class="num">11 768 $</td><td class="num">au 6 mars</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="insight alert" style="margin-top:12px;">
+    <div class="icon">🔍</div>
+    <div class="text">
+      <strong>Q3 2025 : effondrement.</strong> Seulement 36 transactions et 7 154 $ net au troisième trimestre — c'est une chute de 49 % par rapport au Q3 2024. L'été a été particulièrement creux, avec août à seulement 8 transactions (1 700 $). Ce creux estival s'aggrave d'année en année.
+    </div>
+  </div>
+</div>
+
+<!-- Catégories -->
+<div class="section">
+  <div class="section-title">Revenus par type d'abonnement</div>
+  <div class="section-desc">Évolution 2023–2025 par catégorie de membership</div>
+  <div class="cat-grid">
+
+    <div class="cat-card">
+      <div class="cat-name">🎨 Professionnel</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">14 314 $ <span style="color:var(--text-muted)">(83 tx)</span></span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">15 176 $ <span style="color:var(--text-muted)">(88 tx)</span></span><span class="cmr-chg" style="color:var(--sage)">+6,0 %</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">15 004 $ <span style="color:var(--text-muted)">(87 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−1,1 %</span></div>
+    </div>
+
+    <div class="cat-card">
+      <div class="cat-name">🎨✨ Pro + Portfolio+</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">21 845 $ <span style="color:var(--text-muted)">(51 tx)</span></span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">21 485 $ <span style="color:var(--text-muted)">(51 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−1,6 %</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">17 359 $ <span style="color:var(--text-muted)">(39 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−19,2 %</span></div>
+    </div>
+
+    <div class="cat-card">
+      <div class="cat-name">👤 Régulier</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">20 235 $ <span style="color:var(--text-muted)">(115 tx)</span></span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">19 212 $ <span style="color:var(--text-muted)">(109 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−5,1 %</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">18 568 $ <span style="color:var(--text-muted)">(105 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−3,4 %</span></div>
+    </div>
+
+    <div class="cat-card">
+      <div class="cat-name">👤✨ Régulier + Portfolio+</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">11 265 $ <span style="color:var(--text-muted)">(30 tx)</span></span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">6 266 $ <span style="color:var(--text-muted)">(15 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−44,4 %</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">5 887 $ <span style="color:var(--text-muted)">(14 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−6,1 %</span></div>
+    </div>
+
+    <div class="cat-card">
+      <div class="cat-name">🎓 Étudiant / Junior</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">1 937 $ <span style="color:var(--text-muted)">(21 tx)</span></span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">1 092 $ <span style="color:var(--text-muted)">(12 tx)</span></span><span class="cmr-chg" style="color:var(--coral)">−43,6 %</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">1 276 $ <span style="color:var(--text-muted)">(14 tx)</span></span><span class="cmr-chg" style="color:var(--sage)">+16,8 %</span></div>
+    </div>
+
+    <div class="cat-card">
+      <div class="cat-name">📊 Synthèse Portfolio+</div>
+      <div class="cat-mini-row"><span class="cmr-year">2023</span><span class="cmr-val">27 % des adhésions</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2024</span><span class="cmr-val">25 % des adhésions</span></div>
+      <div class="cat-mini-row"><span class="cmr-year">2025</span><span class="cmr-val">20 % des adhésions</span><span class="cmr-chg" style="color:var(--coral)">↓</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Projections -->
+<div class="section">
+  <div class="section-title">Projections 2026</div>
+  <div class="section-desc">Trois scénarios basés sur différentes méthodologies</div>
+
+  <div class="projection-box">
+    <div class="proj-label">Scénarios de revenus nets annuels 2026</div>
+    <div class="proj-scenarios">
+      <div class="scenario pessimistic">
+        <div class="sc-name">Pessimiste</div>
+        <div class="sc-value">~38 500 $</div>
+        <div class="sc-detail">Ratio Jan-Fév historique<br>appliqué au rythme 2026 actuel<br><strong>−33 % vs 2025</strong></div>
+      </div>
+      <div class="scenario moderate">
+        <div class="sc-name">Modéré</div>
+        <div class="sc-value">~45 000 $</div>
+        <div class="sc-detail">Moyenne pondérée des<br>trois méthodes de projection<br><strong>−21 % vs 2025</strong></div>
+      </div>
+      <div class="scenario optimistic">
+        <div class="sc-name">Optimiste</div>
+        <div class="sc-value">~50 000 $</div>
+        <div class="sc-detail">Déclin 2025 se poursuit<br>au même rythme (−13 %)<br><strong>−13 % vs 2025</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight warning" style="margin-top:16px;">
+    <div class="icon">📉</div>
+    <div class="text">
+      <strong>Méthodologie :</strong> Le scénario pessimiste extrapole le rythme actuel Jan-Fév 2026 (8 690 $ = ~22 % de l'année historiquement, ce qui donnerait ~38 500 $). Le modéré est une moyenne pondérée. L'optimiste suppose que le déclin ne s'accélère pas au-delà du rythme de 2025. <strong>Le signal Jan-Fév est le plus alarmant</strong> : c'est habituellement une période forte (renouvellements), et la chute de 41 % pointe vers le scénario pessimiste.
+    </div>
+  </div>
+</div>
+
+<!-- Constats -->
+<div class="section">
+  <div class="section-title">Constats clés</div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:20px 24px;background:var(--bg-warm);border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">1. Le tarif Professionnel n'a jamais bougé</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        172,46 $ depuis 2015. Avec l'inflation cumulée (~30 % sur 10 ans), ce tarif vaut aujourd'hui l'équivalent de ~133 $ en dollars de 2015. IQ laisse environ <strong>4 000–5 000 $ par an</strong> sur la table simplement en ne suivant pas l'IPC.
+      </div>
+    </div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">2. L'érosion du membership s'accélère</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        De 482 transactions (2022) à 263 (2025), soit −45 % en 3 ans. Le rythme de déclin augmente : −6,3 % puis −11,7 % d'une année à l'autre. Sans intervention, on pourrait voir ~190–210 transactions en 2026.
+      </div>
+    </div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">3. Portfolio+ perd du terrain</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        Le taux d'adoption est passé de 27 % (2023) à 20 % (2025). C'est d'autant plus problématique que le Portfolio+ représente la seule source significative de revenu supplémentaire par membre (287 $ d'écart entre Pro et Pro+Portfolio+).
+      </div>
+    </div>
+    <div style="padding:20px 24px;background:var(--bg-warm);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">4. Le Q3 s'effondre</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        Le creux estival est de plus en plus prononcé : Q3 2023 (15 510 $) → Q3 2024 (13 982 $) → Q3 2025 (7 154 $). L'été 2025 avec seulement 36 transactions sur 3 mois est un signal d'alarme. Si les gens n'adhèrent plus l'été, c'est probablement que la proposition de valeur ne justifie pas un renouvellement « hors saison ».
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Analyse générée à partir des données Stripe d'Illustration Québec &middot; 3 375 transactions &middot; Nov. 2015 – Mars 2026
+</div>
+
+</div>
+
+<script>
+// Heatmap data (net revenue per month)
+const data = {
+  '2023': {
+    '01': 4756, '02': 8634, '03': 8342, '04': 4766, '05': 5749, '06': 4531,
+    '07': 4233, '08': 4899, '09': 6378, '10': 6016, '11': 6651, '12': 5641
+  },
+  '2024': {
+    '01': 8240, '02': 6819, '03': 7141, '04': 3798, '05': 5311, '06': 4648,
+    '07': 2463, '08': 4951, '09': 6568, '10': 5678, '11': 5599, '12': 4610
+  },
+  '2025': {
+    '01': 6330, '02': 8519, '03': 5614, '04': 4280, '05': 4615, '06': 5186,
+    '07': 2667, '08': 1700, '09': 2787, '10': 5647, '11': 6123, '12': 3824
+  },
+  '2026': {
+    '01': 3756, '02': 4934, '03': 3078
+  }
+};
+
+const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+const monthKeys = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+
+// Find max for color scaling
+let maxVal = 0;
+for (const y in data) {
+  for (const m in data[y]) {
+    if (data[y][m] > maxVal) maxVal = data[y][m];
+  }
+}
+
+function getColor(val) {
+  const t = val / maxVal;
+  // Warm gradient: light peach → deep coral
+  const r = Math.round(250 - t * 6);
+  const g = Math.round(245 - t * 152);
+  const b = Math.round(240 - t * 166);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getTextColor(val) {
+  return (val / maxVal) > 0.5 ? '#fff' : 'var(--text)';
+}
+
+const grid = document.getElementById('heatmap');
+
+// Headers
+grid.innerHTML = '<div class="hm-header"></div>';
+months.forEach(m => {
+  grid.innerHTML += `<div class="hm-header">${m}</div>`;
+});
+
+// Rows
+['2023','2024','2025','2026'].forEach(year => {
+  grid.innerHTML += `<div class="hm-year">${year}</div>`;
+  monthKeys.forEach(mk => {
+    const val = data[year]?.[mk];
+    if (val !== undefined) {
+      const formatted = (val / 1000).toFixed(1) + 'k';
+      grid.innerHTML += `<div class="hm-cell" style="background:${getColor(val)};color:${getTextColor(val)}">${formatted}</div>`;
+    } else {
+      grid.innerHTML += `<div class="hm-cell empty">—</div>`;
+    }
+  });
+});
+</script>
+</body>
+</html>

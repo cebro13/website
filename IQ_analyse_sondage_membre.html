@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IQ — Analyse du sondage membres</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF5F0;
+  --bg-card: #FFFFFF;
+  --bg-warm: #FFF5EC;
+  --bg-accent: #FFF0E3;
+  --text: #2D2A26;
+  --text-muted: #8A8279;
+  --text-light: #B5ADA4;
+  --peach: #F4845F;
+  --peach-light: #FCEADE;
+  --coral: #E85D4A;
+  --sage: #7B9E87;
+  --sage-light: #E8F0EA;
+  --gold: #D4A853;
+  --gold-light: #FBF3E0;
+  --blue: #7B8FA8;
+  --blue-light: #E8EDF2;
+  --plum: #9B7FA8;
+  --plum-light: #F0E8F4;
+  --border: #E8E2DA;
+  --shadow: 0 1px 3px rgba(45,42,38,0.06), 0 4px 12px rgba(45,42,38,0.04);
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; -webkit-font-smoothing:antialiased; }
+.container { max-width:1080px; margin:0 auto; padding:40px 24px 80px; }
+
+header { margin-bottom:48px; padding-bottom:32px; border-bottom:1px solid var(--border); }
+header .tag { display:inline-block; font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--sage); background:var(--sage-light); padding:4px 12px; border-radius:100px; margin-bottom:16px; }
+header h1 { font-family:'DM Serif Display',serif; font-size:34px; font-weight:400; line-height:1.2; margin-bottom:8px; }
+header .subtitle { font-size:15px; color:var(--text-muted); }
+
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
+.kpi { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+.kpi .label { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+.kpi .value { font-size:28px; font-weight:700; line-height:1.1; }
+.kpi .detail { font-size:13px; color:var(--text-muted); margin-top:4px; }
+
+.section { margin-bottom:44px; }
+.section-title { font-family:'DM Serif Display',serif; font-size:22px; font-weight:400; margin-bottom:6px; }
+.section-desc { font-size:14px; color:var(--text-muted); margin-bottom:20px; }
+
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:24px; margin-bottom:20px; }
+
+/* Horizontal bar chart */
+.hbar { margin-bottom:8px; }
+.hbar-row { display:grid; grid-template-columns:200px 1fr 44px; align-items:center; gap:12px; margin-bottom:7px; }
+.hbar-label { font-size:13px; font-weight:500; text-align:right; color:var(--text); }
+.hbar-track { height:26px; background:#f5f0eb; border-radius:6px; overflow:hidden; }
+.hbar-fill { height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; font-weight:600; color:white; min-width:28px; }
+.hbar-pct { font-size:13px; font-weight:600; color:var(--text-muted); text-align:right; }
+
+/* Donut-like summary */
+.sentiment-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+.sentiment-card { border-radius:10px; padding:16px; text-align:center; }
+.sentiment-card .sc-val { font-size:32px; font-weight:700; line-height:1; }
+.sentiment-card .sc-label { font-size:12px; font-weight:600; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.sentiment-card .sc-pct { font-size:14px; font-weight:500; margin-top:2px; }
+.sc-ok { background:var(--sage-light); }
+.sc-ok .sc-val, .sc-ok .sc-label { color:var(--sage); }
+.sc-mixed { background:var(--gold-light); }
+.sc-mixed .sc-val, .sc-mixed .sc-label { color:var(--gold); }
+.sc-neg { background:var(--peach-light); }
+.sc-neg .sc-val, .sc-neg .sc-label { color:var(--coral); }
+
+/* Quote blocks */
+.quotes { display:grid; gap:12px; }
+.quote { padding:14px 18px; border-radius:10px; font-size:14px; line-height:1.55; position:relative; font-style:italic; color:#4a4540; }
+.quote::before { content:'"'; position:absolute; top:6px; left:6px; font-size:28px; font-family:'DM Serif Display',serif; color:var(--text-light); opacity:0.4; font-style:normal; }
+.quote .qtag { display:inline-block; font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:2px 8px; border-radius:100px; margin-top:8px; font-style:normal; }
+.q-warm { background:#FFF8F3; }
+.q-green { background:#F4F9F5; }
+.q-blue { background:#F3F6FA; }
+.q-plum { background:#F8F3FA; }
+
+/* Insight blocks */
+.insight { display:flex; gap:12px; padding:16px; border-radius:10px; margin-bottom:12px; }
+.insight.warning { background:#FFF3EC; border-left:3px solid var(--coral); }
+.insight.info { background:var(--sage-light); border-left:3px solid var(--sage); }
+.insight.alert { background:var(--gold-light); border-left:3px solid var(--gold); }
+.insight.idea { background:var(--plum-light); border-left:3px solid var(--plum); }
+.insight .icon { font-size:18px; flex-shrink:0; }
+.insight .text { font-size:14px; line-height:1.5; }
+.insight .text strong { font-weight:600; }
+
+/* Thematic list */
+.theme-group { margin-bottom:24px; }
+.theme-group h3 { font-size:16px; font-weight:600; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.theme-group h3 .badge { font-size:11px; font-weight:600; background:var(--peach-light); color:var(--peach); padding:2px 8px; border-radius:100px; }
+.idea-list { list-style:none; }
+.idea-list li { padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; display:flex; gap:8px; align-items:flex-start; }
+.idea-list li:last-child { border:none; }
+.idea-list li .bullet { color:var(--peach); font-weight:700; flex-shrink:0; }
+
+/* Recommendation cards */
+.reco-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.reco { border-radius:12px; padding:20px; }
+.reco .reco-num { font-size:32px; font-weight:700; opacity:0.15; line-height:1; margin-bottom:8px; }
+.reco .reco-title { font-size:15px; font-weight:600; margin-bottom:6px; }
+.reco .reco-text { font-size:13px; line-height:1.5; color:#5a5550; }
+.reco-1 { background:var(--peach-light); }
+.reco-2 { background:var(--sage-light); }
+.reco-3 { background:var(--gold-light); }
+.reco-4 { background:var(--blue-light); }
+.reco-5 { background:var(--plum-light); }
+.reco-6 { background:var(--bg-accent); }
+
+.footer { margin-top:48px; padding-top:24px; border-top:1px solid var(--border); font-size:12px; color:var(--text-light); text-align:center; }
+
+@media (max-width:768px) {
+  .kpi-row { grid-template-columns:repeat(2,1fr); }
+  .sentiment-row { grid-template-columns:1fr; }
+  .hbar-row { grid-template-columns:120px 1fr 40px; }
+  .reco-grid { grid-template-columns:1fr; }
+  header h1 { font-size:26px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="tag">Sondage membres</div>
+  <h1>Propositions et suggestions — Illustration Québec</h1>
+  <div class="subtitle">Analyse de 40 réponses &middot; 24 février au 2 mars 2026</div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="label">Répondants</div>
+    <div class="value">40</div>
+    <div class="detail">en 7 jours</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Thème #1</div>
+    <div class="value" style="font-size:20px;">Communauté</div>
+    <div class="detail">68 % des répondants</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Cotisation</div>
+    <div class="value" style="font-size:20px;">Divisée</div>
+    <div class="detail">55 % OK, 20 % trop cher</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Mot-clé récurrent</div>
+    <div class="value" style="font-size:20px;">Site web</div>
+    <div class="detail">55 % le mentionnent</div>
+  </div>
+</div>
+
+<!-- ===================== Q1 : Services importants ===================== -->
+<div class="section">
+  <div class="section-title">Ce qui compte le plus pour les membres</div>
+  <div class="section-desc">Question : « Quels sont les services et activités d'IQ qui vous semblent les plus importants ? »</div>
+
+  <div class="card">
+    <div class="hbar">
+      <div class="hbar-row">
+        <div class="hbar-label">Communauté / réseautage</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:68%;background:var(--peach);">68%</div></div>
+        <div class="hbar-pct">27/40</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Défense des droits / IA</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:57%;background:var(--coral);">57%</div></div>
+        <div class="hbar-pct">23/40</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Site web / portfolio</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:55%;background:var(--gold);">55%</div></div>
+        <div class="hbar-pct">22/40</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Formations / ateliers</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:55%;background:var(--sage);">55%</div></div>
+        <div class="hbar-pct">22/40</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Grille tarifaire / guides</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:35%;background:var(--blue);">35%</div></div>
+        <div class="hbar-pct">14/40</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Visibilité / promotion</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:30%;background:var(--plum);">30%</div></div>
+        <div class="hbar-pct">12/40</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight info">
+    <div class="icon">💡</div>
+    <div class="text"><strong>Le trio gagnant :</strong> La communauté (groupe Facebook, CHILLustrations, entraide), la défense des droits face à l'IA, et le portfolio en ligne forment le socle de valeur d'IQ aux yeux des membres. Les formations et la grille tarifaire complètent l'offre. Le site web est autant un atout qu'une source de frustration.</div>
+  </div>
+</div>
+
+<!-- ===================== Q2 : Cotisations ===================== -->
+<div class="section">
+  <div class="section-title">Perception du modèle de financement</div>
+  <div class="section-desc">Question : « Que pensez-vous du modèle de financement ? Du montant des cotisations ? »</div>
+
+  <div class="card">
+    <div class="sentiment-row">
+      <div class="sentiment-card sc-ok">
+        <div class="sc-val">22</div>
+        <div class="sc-label">Acceptable</div>
+        <div class="sc-pct">55 %</div>
+      </div>
+      <div class="sentiment-card sc-mixed">
+        <div class="sc-val">10</div>
+        <div class="sc-label">Nuancée</div>
+        <div class="sc-pct">25 %</div>
+      </div>
+      <div class="sentiment-card sc-neg">
+        <div class="sc-val">8</div>
+        <div class="sc-label">Trop cher</div>
+        <div class="sc-pct">20 %</div>
+      </div>
+    </div>
+
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Parmi les 22 qui trouvent la cotisation acceptable, <strong>au moins 10 sont explicitement ouverts à une hausse légère</strong>. Parmi les nuancés, plusieurs conditionnent une hausse à une amélioration des services (surtout le site web).</div>
+
+    <div class="hbar" style="margin-top:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Sous-thèmes récurrents</div>
+      <div class="hbar-row">
+        <div class="hbar-label">Ouvert à une hausse</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:50%;background:var(--sage);">~10</div></div>
+        <div class="hbar-pct">~25 %</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Portfolio+ trop cher</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:30%;background:var(--coral);">~6</div></div>
+        <div class="hbar-pct">~15 %</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Suggère des paliers</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:25%;background:var(--gold);">~5</div></div>
+        <div class="hbar-pct">~13 %</div>
+      </div>
+      <div class="hbar-row">
+        <div class="hbar-label">Diversifier le financement</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:50%;background:var(--blue);">~10</div></div>
+        <div class="hbar-pct">~25 %</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quotes cotisations -->
+  <div class="quotes">
+    <div class="quote q-green">
+      Augmenter de 172 à 200 serait tout à fait acceptable pour les membres. Ou peut-être un chiffre un tout petit peu en bas de 200, pour la limite mentale du 200 :P Du genre 192 ?
+      <div><span class="qtag" style="background:var(--sage-light);color:var(--sage);">Hausse acceptée</span></div>
+    </div>
+    <div class="quote q-green">
+      Les cotisations n'ont pas bougé depuis longtemps, je serais prêt à payer un 10 % de plus.
+      <div><span class="qtag" style="background:var(--sage-light);color:var(--sage);">Hausse acceptée</span></div>
+    </div>
+    <div class="quote q-warm">
+      Vous pourriez avoir un prix membre junior et membre senior. Je serais prête à payer plus maintenant qu'en début de carrière. Un prix plus accessible serait peut-être plus alléchant pour les étudiants et les finissants.
+      <div><span class="qtag" style="background:var(--gold-light);color:var(--gold);">Paliers</span></div>
+    </div>
+    <div class="quote q-warm">
+      Le montant (plus de 180 $) est très élevé pour pouvoir montrer 3 illustrations. Le service semble principalement profiter aux membres montréalais. En région, on se sent déconnecté.
+      <div><span class="qtag" style="background:var(--peach-light);color:var(--coral);">Trop cher</span> <span class="qtag" style="background:var(--blue-light);color:var(--blue);">Régions</span></div>
+    </div>
+    <div class="quote q-blue">
+      Pourrait aussi être sous forme de paliers : prix solidaire, prix moyen, prix plus élevé pour soutenir l'organisme.
+      <div><span class="qtag" style="background:var(--gold-light);color:var(--gold);">Paliers</span></div>
+    </div>
+    <div class="quote q-plum">
+      La dépendance aux cotisations est fragile, le coût du portfolio paraît un peu élevé, la cotisation annuelle très bien.
+      <div><span class="qtag" style="background:var(--plum-light);color:var(--plum);">Modèle fragile</span></div>
+    </div>
+  </div>
+
+  <div class="insight alert" style="margin-top:16px;">
+    <div class="icon">⚖️</div>
+    <div class="text"><strong>Lecture stratégique :</strong> Une hausse de la cotisation de base (~10–15 %, de 172 $ à ~190 $) serait bien reçue par la majorité. C'est le prix du Portfolio+ (459 $) qui fait consensus comme étant trop élevé — exactement le produit dont l'adoption baisse dans les données Stripe. Plusieurs membres suggèrent des paliers tarifaires (solidaire/junior/senior) et une diversification des revenus (dons, subventions, sociofinancement).</div>
+  </div>
+</div>
+
+<!-- ===================== Q3 : Suggestions de projets ===================== -->
+<div class="section">
+  <div class="section-title">Suggestions de projets et développement</div>
+  <div class="section-desc">Question : « Avez-vous des suggestions de projets pour développer notre association ? »</div>
+
+  <div class="card">
+    <div class="theme-group">
+      <h3>🎪 Événements et visibilité publique <span class="badge">14 mentions</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Expositions collectives annuelles, encans-bénéfice d'œuvres originales</li>
+        <li><span class="bullet">→</span> Présence aux salons pertinents (au-delà du Salon du livre) : commerce, numérique, emploi</li>
+        <li><span class="bullet">→</span> Foires de zines, ventes d'articles d'illustrateurs</li>
+        <li><span class="bullet">→</span> Gala annuel récompensant les campagnes faisant appel à l'illustration</li>
+        <li><span class="bullet">→</span> Soirées d'humour, dessins en direct, événements-bénéfice créatifs</li>
+        <li><span class="bullet">→</span> Biennale d'illustration — modèle AOI (Angleterre)</li>
+      </ul>
+    </div>
+
+    <div class="theme-group">
+      <h3>🌐 Refonte du site web <span class="badge">10 mentions</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Ergonomie et design à moderniser (« on voit qu'il est très vieux »)</li>
+        <li><span class="bullet">→</span> Système de recherche par style/type qui fonctionne réellement</li>
+        <li><span class="bullet">→</span> Plus de projets dans le portfolio de base (pas juste 3 images)</li>
+        <li><span class="bullet">→</span> Modèle de site d'agent : mettre en avant les illustrateurs de façon professionnelle</li>
+        <li><span class="bullet">→</span> Section actualités à jour, contenu vivant</li>
+      </ul>
+    </div>
+
+    <div class="theme-group">
+      <h3>🤝 Mentorat et transfert de connaissances <span class="badge">8 mentions</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Cafés-rencontres avec illustrateurs d'expérience</li>
+        <li><span class="bullet">→</span> Mentorat à la pièce (pas seulement sur dates fixes)</li>
+        <li><span class="bullet">→</span> Rassemblements Zoom mensuels (~45 min) : un·e illustrateur·rice présente son parcours</li>
+        <li><span class="bullet">→</span> Résidences de création entre membres par secteur</li>
+        <li><span class="bullet">→</span> Partenariats avec écoles d'illustration</li>
+      </ul>
+    </div>
+
+    <div class="theme-group">
+      <h3>💰 Diversification du financement <span class="badge">10 mentions</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Subventions : CALQ, Conseil des Arts du Canada, subventions numériques</li>
+        <li><span class="bullet">→</span> Mécénat privé : fondations, entreprises, banques</li>
+        <li><span class="bullet">→</span> Sociofinancement (campagne La Ruche, Ulule…)</li>
+        <li><span class="bullet">→</span> Option de don volontaire en plus de la cotisation</li>
+        <li><span class="bullet">→</span> Ateliers payants offerts au grand public via les bibliothèques</li>
+        <li><span class="bullet">→</span> Copibec comme source potentielle de financement</li>
+      </ul>
+    </div>
+
+    <div class="theme-group">
+      <h3>🗺️ Décentralisation <span class="badge">3 mentions — mais percutantes</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Créer des pôles régionaux actifs (CHILLustrations hors Montréal)</li>
+        <li><span class="bullet">→</span> Activités et services pensés pour les membres en région</li>
+        <li><span class="bullet">→</span> Le sentiment d'exclusion régionale est un frein direct à l'adhésion</li>
+      </ul>
+    </div>
+
+    <div class="theme-group">
+      <h3>🔗 Partenariats et maillages <span class="badge">5 mentions</span></h3>
+      <ul class="idea-list">
+        <li><span class="bullet">→</span> Partenariats avec d'autres regroupements disciplinaires (maillages insolites)</li>
+        <li><span class="bullet">→</span> Affiliation SCWBI Canada (illustration jeunesse)</li>
+        <li><span class="bullet">→</span> Modèle AOI (Angleterre) : membres internationaux, services élargis</li>
+        <li><span class="bullet">→</span> Se positionner sur ce que UNEQ/RAAV ne couvriront pas comme syndicat</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Q4 : Commentaires libres ===================== -->
+<div class="section">
+  <div class="section-title">Commentaires marquants</div>
+  <div class="section-desc">Les voix des membres — verbatims sélectionnés pour leur pertinence stratégique</div>
+
+  <div class="quotes">
+    <div class="quote q-warm">
+      Il y a une urgence de rigueur. Si Illustration Québec veut survivre, elle doit redevenir l'outil de référence. Cela passe par un site web vivant et une communication qui inclut réellement les membres en régions.
+      <div><span class="qtag" style="background:var(--peach-light);color:var(--coral);">Urgence</span></div>
+    </div>
+    <div class="quote q-blue">
+      Miser sur ce que l'UNEQ/RAAV ne fournira pas comme syndicat : formation, découvrabilité des portfolios en ligne, activités d'animation, réseautage. Augmenter le membership et rapatrier les illustrateurs qui ont quitté.
+      <div><span class="qtag" style="background:var(--blue-light);color:var(--blue);">Positionnement</span></div>
+    </div>
+    <div class="quote q-green">
+      Grâce à IQ j'ai pu percer le marché du Royaume-Uni. (...) Compiler et mettre de l'avant des chiffres ou des témoignages pour attirer plus de membres au portfolio payant.
+      <div><span class="qtag" style="background:var(--sage-light);color:var(--sage);">Témoignage ROI</span></div>
+    </div>
+    <div class="quote q-plum">
+      Les efforts de communication sont trop concentrés sur les membres. Il faut faire connaître notre pertinence de manière plus générale par des activités grand public, comme une biennale. L'illustration est partout, sauf dans l'espace public.
+      <div><span class="qtag" style="background:var(--plum-light);color:var(--plum);">Rayonnement</span></div>
+    </div>
+    <div class="quote q-warm">
+      Si le site internet était plus facile d'utilisation et plus fonctionnel, plus d'illustrateurs voudraient cotiser pour en faire partie, comme le site d'un agent qui met ses illustrateurs en avant.
+      <div><span class="qtag" style="background:var(--peach-light);color:var(--coral);">Site web = levier</span></div>
+    </div>
+    <div class="quote q-green">
+      Économie de moyens : mobiliser les membres comme porte-drapeaux. Ouvrir un podcast, faire des interviews de membres, créer du contenu de rayonnement.
+      <div><span class="qtag" style="background:var(--sage-light);color:var(--sage);">Low-cost, high-impact</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Synthèse croisée ===================== -->
+<div class="section">
+  <div class="section-title">Croisement avec les données Stripe</div>
+  <div class="section-desc">Ce que le sondage éclaire dans les tendances financières</div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:20px 24px;background:var(--bg-warm);border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">L'adoption du Portfolio+ en chute (20 %) — le sondage confirme pourquoi</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        Plusieurs membres trouvent que 460 $ pour le Portfolio+ est trop cher par rapport à la qualité du site. Le ratio qualité/prix perçu est le frein principal, pas le concept lui-même. La limite de 3 images par projet au tarif de base est aussi perçue comme trop restrictive. Combiné au déclin Stripe (−19 % de revenus Pro+Portfolio+ en 2025), c'est le point de rupture le plus clair.
+      </div>
+    </div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">La baisse de membership (−45 % depuis 2022) — le site web est au cœur du problème</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        Le site web est mentionné comme service important par 55 % des répondants, mais presque toujours avec une critique : vieillissant, recherche cassée, peu fonctionnel, actualités obsolètes. Pour les membres en région qui n'ont accès ni aux CHILLustrations ni aux événements, le site EST le service. S'il ne performe pas, l'adhésion perd son sens.
+      </div>
+    </div>
+    <div style="padding:20px 24px;background:var(--bg-warm);">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">Le tarif figé depuis 10 ans — le sondage donne le feu vert</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">
+        55 % trouvent la cotisation acceptable et au moins 10 répondants sont explicitement ouverts à une hausse de 10-15 %. Des montants précis sont même suggérés (192 $, 200 $). La cotisation de base n'est pas le problème principal. Par contre, une hausse devrait s'accompagner d'améliorations visibles pour ne pas accélérer le départ des membres qui doutent déjà.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Recommandations ===================== -->
+<div class="section">
+  <div class="section-title">Actions recommandées</div>
+  <div class="section-desc">Priorisées par impact et faisabilité, en tenant compte des données financières et du sondage</div>
+
+  <div class="reco-grid">
+    <div class="reco reco-1">
+      <div class="reco-num">01</div>
+      <div class="reco-title">Hausse tarifaire ciblée</div>
+      <div class="reco-text">Augmenter la cotisation de base à ~190 $ (+10 %). Réduire le prix du Portfolio+ ou offrir un palier intermédiaire. Ajouter une option « don volontaire » au renouvellement. Impact estimé : +4 000–6 000 $/an au volume actuel.</div>
+    </div>
+    <div class="reco reco-2">
+      <div class="reco-num">02</div>
+      <div class="reco-title">Refonte du site web — priorité #1</div>
+      <div class="reco-text">C'est le levier de rétention ET d'acquisition. Recherche fonctionnelle, portfolios modernisés, contenu vivant. Sans ça, toute hausse tarifaire risque d'accélérer les départs. La demande de subvention au CAC (programme 4002) est alignée avec ce besoin.</div>
+    </div>
+    <div class="reco reco-3">
+      <div class="reco-num">03</div>
+      <div class="reco-title">Paliers tarifaires</div>
+      <div class="reco-text">Junior/étudiant (~100 $), Régulier (~190 $), Pro/soutien (~250 $+). Plusieurs membres le demandent. Les paliers permettent d'accueillir ceux pour qui le prix est un frein tout en captant la volonté de payer davantage des membres établis.</div>
+    </div>
+    <div class="reco reco-4">
+      <div class="reco-num">04</div>
+      <div class="reco-title">Diversifier les revenus</div>
+      <div class="reco-text">Dons, mécénat, ateliers grand public, partenariat Copibec, subventions CALQ/CAC. La dépendance aux cotisations (identifiée par les membres eux-mêmes comme fragile) doit être réduite. 50 % des répondants mentionnent des pistes de financement externe.</div>
+    </div>
+    <div class="reco reco-5">
+      <div class="reco-num">05</div>
+      <div class="reco-title">Événements à faible coût, haut impact</div>
+      <div class="reco-text">Zooms mensuels (parcours d'illustrateurs), encans-bénéfice, podcast de membres, contenus de rayonnement. Les membres veulent de la communauté active (68 %) — et ces formats ne coûtent presque rien à produire.</div>
+    </div>
+    <div class="reco reco-6">
+      <div class="reco-num">06</div>
+      <div class="reco-title">Témoignages ROI + recrutement</div>
+      <div class="reco-text">Documenter les retombées concrètes du portfolio (contrats obtenus, marchés percés). C'est la meilleure publicité pour le Portfolio+. Cibler le recrutement dans les écoles d'illustration et auprès des membres ayant quitté.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Analyse de 40 réponses au sondage « Propositions et suggestions IQ » &middot; 24 fév. – 2 mars 2026
+</div>
+
+</div>
+</body>
+</html>
